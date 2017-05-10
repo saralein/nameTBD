@@ -15,6 +15,7 @@
       font-size: x-small;
       font-weight: 900;
       -webkit-font-smoothing: antialiased;
+      background-color: #d1d2cc;
     }
   </style>
 
@@ -23,12 +24,16 @@
 
     <svg></svg>
 
+    <a href="https://sca.coffee/">Specialty Coffee Association</a>
+
     <script>
 
-      var width = 500;
-      var height = 500;
+      var width = 700;
+      var height = 700;
       var radius = Math.min(width, height) / 2;
       var color = d3.scaleOrdinal(d3.schemeCategory20b);
+      console.log(color);
+      console.log(d3.schemeCategory20b);
 
       var g = d3.select('svg')
         .attr('width', width)
@@ -59,8 +64,8 @@
           .append('path')
           .attr("display", function (d) { return d.depth ? null : "none"; })
           .attr("d", arc)
-          .style('stroke', '#fff')
-          .style("fill", function (d) { return color((d.children ? d : d.parent).data.name); });
+          .style('stroke', '#d1d2cc')
+          .style("fill", function (d) { return d.parent ? d.data.color : ""; });
 
         g.selectAll(".node")
           .append("text")
@@ -69,18 +74,37 @@
           .attr("dx", "-20")
           .attr("dy", ".5em")
           .style('fill', '#fff')
-          .text(function(d) { return d.parent ? d.data.name : "" });
+          .text(function(d) {
+            let p =  d.parent ? d.data.name : "";
+            //console.log('what?', p);
+            //console.log("d.data.name", d.data.name)
+            return p});
+
+        g.selectAll('.node d.data.name').each(insertLinebreaks);
       });
 
     function computeTextRotation(d) {
-      var angle = (d.x0 + d.x1) / Math.PI * 90;  // <-- 1
+      var angle = (d.x0 + d.x1) / Math.PI * 90;
 
-      // Avoid upside-down labels
-      //return (angle < 90 || angle > 270) ? angle : angle + 180;  // <--2 "labels aligned with slices"
+      // set base labels to horizontal
+      if (d.data.type) return (angle < 90 || angle > 270) ? angle : angle + 180;
 
-      // Alternate label formatting
-      return (angle < 180) ? angle - 90 : angle + 90;  // <-- 3 "labels as spokes"
+      // set children labels to vertical
+      return (angle < 180) ? angle - 90 : angle + 90;
     }
+
+    var insertLinebreaks = function (d) {
+        console.log("d", d)
+        var el = d3.select(this);
+        var words = d.split(' ');
+        el.text('');
+
+        for (var i = 0; i < words.length; i++) {
+            var tspan = el.append('tspan').text(words[i]);
+            if (i > 0)
+                tspan.attr('x', 0).attr('dy', '15');
+        }
+    };
 
     </script>
   </body>
